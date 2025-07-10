@@ -1,0 +1,2 @@
+Flask>=2.3
+letta-client>=0.1.0  # Make sure to install if you want Letta integration 

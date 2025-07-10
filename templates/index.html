@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Email Personalizer</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 2rem;
+        background: #f7f7f7;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: #fff;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      label {
+        font-weight: bold;
+        display: block;
+        margin-top: 1rem;
+      }
+      select,
+      textarea,
+      input[type="text"] {
+        width: 100%;
+        padding: 0.5rem;
+        margin-top: 0.25rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      button {
+        margin-top: 1.5rem;
+        padding: 0.75rem 1.5rem;
+        background: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      pre {
+        background: #f0f0f0;
+        padding: 1rem;
+        border-radius: 4px;
+        overflow-x: auto;
+      }
+      #responseContainer {
+        margin-top: 2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Email Personalizer Demo</h2>
+      <form id="personalizerForm">
+        <label for="userSelect">Select User</label>
+        <select id="userSelect" name="user_id" required>
+          {% for user in users %}
+          <option value="{{ user.external_id }}">{{ user.first_name }} ({{ user.external_id }})</option>
+          {% endfor %}
+        </select>
+
+        <label for="promptInput">Prompt</label>
+        <textarea
+          id="promptInput"
+          name="prompt"
+          rows="4"
+          placeholder="e.g., Generate a subject line referencing the last time we reached out and asking about their favorite album."
+          required
+        ></textarea>
+
+        <button type="submit">Generate</button>
+      </form>
+
+      <div id="responseContainer" style="display: none;">
+        <h3>Generated Email Template</h3>
+        <pre id="responseContent"></pre>
+      </div>
+    </div>
+
+    <script>
+      const form = document.getElementById("personalizerForm");
+      const responseContainer = document.getElementById("responseContainer");
+      const responseContent = document.getElementById("responseContent");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        responseContainer.style.display = "none";
+
+        const formData = new FormData(form);
+        const payload = {
+          user_id: formData.get("user_id"),
+          prompt: formData.get("prompt"),
+        };
+
+        try {
+          const res = await fetch("/get_message", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+          });
+
+          const data = await res.json();
+          responseContent.textContent = JSON.stringify(data, null, 2);
+          responseContainer.style.display = "block";
+        } catch (err) {
+          alert("Error generating email. Check console for details.");
+          console.error(err);
+        }
+      });
+    </script>
+  </body>
+</html> 
